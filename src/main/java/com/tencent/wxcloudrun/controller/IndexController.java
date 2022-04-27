@@ -1,5 +1,6 @@
 package com.tencent.wxcloudrun.controller;
 
+import com.alibaba.fastjson.JSONArray;
 import com.tencent.wxcloudrun.service.DataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -32,6 +33,15 @@ public class IndexController {
       return dataService.getDeviceDataByAPI(3, PRODUCT_ID, DEVICE_ID_863882045830376);
     }
     return "";
+  }
+
+  @GetMapping("/device/data/list")
+  public String getAllDeviceData(@PathVariable String deviceId) throws Exception {
+    JSONArray jsonArray = new JSONArray();
+    jsonArray.add(dataService.getDeviceDataByAPI(1, PRODUCT_ID, DEVICE_ID_863882045830350));
+    jsonArray.add(dataService.getDeviceDataByAPI(2, PRODUCT_ID, DEVICE_ID_863882045830368));
+    jsonArray.add(dataService.getDeviceDataByAPI(3, PRODUCT_ID, DEVICE_ID_863882045830376));
+    return jsonArray.toJSONString();
   }
 
 }
