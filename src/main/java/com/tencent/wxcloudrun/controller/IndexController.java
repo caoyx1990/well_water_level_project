@@ -3,7 +3,6 @@ package com.tencent.wxcloudrun.controller;
 import com.alibaba.fastjson.JSONArray;
 import com.tencent.wxcloudrun.service.DataService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,20 +22,20 @@ public class IndexController {
   @Autowired
   private DataService dataService;
 
-  @GetMapping("/device/{deviceId}/data")
+  @GetMapping("/device/data/{deviceId}")
   public String getDeviceData(@PathVariable String deviceId) throws Exception {
     if ("350".equalsIgnoreCase(deviceId)) {
-      return dataService.getDeviceDataByAPI(1, PRODUCT_ID, DEVICE_ID_863882045830350);
+      return dataService.getDeviceDataByAPI(1, PRODUCT_ID, DEVICE_ID_863882045830350).toJSONString();
     } else if ("368".equalsIgnoreCase(deviceId)) {
-      return dataService.getDeviceDataByAPI(2, PRODUCT_ID, DEVICE_ID_863882045830368);
+      return dataService.getDeviceDataByAPI(2, PRODUCT_ID, DEVICE_ID_863882045830368).toJSONString();
     } else if ("376".equalsIgnoreCase(deviceId)) {
-      return dataService.getDeviceDataByAPI(3, PRODUCT_ID, DEVICE_ID_863882045830376);
+      return dataService.getDeviceDataByAPI(3, PRODUCT_ID, DEVICE_ID_863882045830376).toJSONString();
     }
     return "";
   }
 
   @GetMapping("/device/data/list")
-  public String getAllDeviceData(@PathVariable String deviceId) throws Exception {
+  public String getAllDeviceData() throws Exception {
     JSONArray jsonArray = new JSONArray();
     jsonArray.add(dataService.getDeviceDataByAPI(1, PRODUCT_ID, DEVICE_ID_863882045830350));
     jsonArray.add(dataService.getDeviceDataByAPI(2, PRODUCT_ID, DEVICE_ID_863882045830368));

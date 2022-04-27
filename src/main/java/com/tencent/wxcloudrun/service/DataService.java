@@ -1,5 +1,6 @@
 package com.tencent.wxcloudrun.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.tencent.wxcloudrun.utils.Constant;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -32,7 +33,7 @@ public class DataService {
     /**
      * http POST请求示例
      */
-    public String getDeviceDataByAPI(int id, String productId, String deviceId) throws Exception {
+    public JSONObject getDeviceDataByAPI(int id, String productId, String deviceId) throws Exception {
         // 下面以增加设备的API为例【具体信息请以使能平台的API文档为准】。
         //请求BODY,到文档中心->使能平台API文档打开要调用的api中，在“请求BODY”中查看
         String bodyString = String.format("{\"productId\": \"%s\", \"deviceId\": \"%s\"}", productId, deviceId);
@@ -77,7 +78,6 @@ public class DataService {
             response = httpClient.execute(httpPost);
             // 从response获取响应结果
             String body = new String(EntityUtils.toByteArray(response.getEntity()));
-            System.out.println(body);
             return dataTransferService.convertData(id, body);
 
         } catch (ClientProtocolException e) {
@@ -87,7 +87,7 @@ public class DataService {
         } finally {
             httpClient.close();
         }
-        return "";
+        return null;
     }
 
 
