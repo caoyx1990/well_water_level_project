@@ -19,7 +19,7 @@ public class DataTransferService {
         //电量
         //通信
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+8"));
         JSONObject resultJson = new JSONObject();
         resultJson.put("id", id);
         JSONObject json = JSONObject.parseObject(input);
