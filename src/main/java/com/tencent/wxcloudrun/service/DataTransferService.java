@@ -18,8 +18,8 @@ public class DataTransferService {
         //水位（压力）
         //电量
         //通信
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
-        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
         JSONObject resultJson = new JSONObject();
         resultJson.put("id", id);
         JSONObject json = JSONObject.parseObject(input);
