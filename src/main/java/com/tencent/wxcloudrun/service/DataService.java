@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.tencent.wxcloudrun.utils.Constant;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpVersion;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -13,6 +14,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.tomcat.util.codec.binary.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,35 +29,80 @@ import java.util.*;
 
 @Service
 public class DataService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataService.class);
+
+    private static final SimpleDateFormat DATA_FORMAT = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
 
     @Autowired
     private DataTransferService dataTransferService;
 
+    private static CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+
+    /**
+     * /getDeviceStatusHisInPage
+     * {"productId":"10000088","deviceId":"10000088001","begin_timestamp":"1538981624878",
+     * "end_timestamp":"1539575396505","page_size":5,"page_timestamp":"1539575396505"}
+     * @return
+     */
+    public synchronized JSONObject getDeviceStatusHisInPage(String productId, String deviceId) throws Exception {
+        JSONObject jsonBody = new JSONObject();
+        jsonBody.put("productId", productId);
+        jsonBody.put("deviceId", deviceId);
+        Date date = new Date();
+        date.setMonth(4);
+        jsonBody.put("begin_timestamp",  date.getTime());
+        jsonBody.put("end_timestamp", new Date().getTime());
+        jsonBody.put("page_size", "5");
+        jsonBody.put("page_timestamp", "");
+        String bodyString = jsonBody.toString();
+
+        URIBuilder uriBuilder = new URIBuilder();
+        uriBuilder.setScheme("https");
+        uriBuilder.setHost("ag-api.ctwing.cn/aep_device_status"); //请求地址
+        uriBuilder.setPath("/getDeviceStatusHisInPage"); //访问路径，可以在API文档中对应API中找到此访问路径
+        // 在请求的URL中添加参数，具体参考文档中心->API文档中请求参数说明
+        Optional<HttpResponse> responseOpt = sendHttpPost(uriBuilder, bodyString);
+        // 从response获取响应结果
+        if (responseOpt.isPresent()) {
+            String body = new String(EntityUtils.toByteArray(responseOpt.get().getEntity()));
+            LOGGER.info(body);
+        }
+        return null;
+    }
+
     /**
      * http POST请求示例
      */
-    public JSONObject getDeviceDataByAPI(int id, String productId, String deviceId) throws Exception {
+    public synchronized JSONObject getDeviceDataByAPI(int id, String productId, String deviceId) throws Exception {
         // 下面以增加设备的API为例【具体信息请以使能平台的API文档为准】。
         //请求BODY,到文档中心->使能平台API文档打开要调用的api中，在“请求BODY”中查看
         String bodyString = String.format("{\"productId\": \"%s\", \"deviceId\": \"%s\"}", productId, deviceId);
-        CloseableHttpClient httpClient = null;
-        HttpResponse response = null;
-        httpClient = HttpClientBuilder.create().build();
-        long offset = getTimeOffset();// 获取时间偏移量，方法见前面
         // 构造请求的URL，具体参考文档中心->使能平台API文档中的请求地址和访问路径
         URIBuilder uriBuilder = new URIBuilder();
         uriBuilder.setScheme("https");
         uriBuilder.setHost("ag-api.ctwing.cn/aep_device_status"); //请求地址
         uriBuilder.setPath("/deviceStatusList"); //访问路径，可以在API文档中对应API中找到此访问路径
         // 在请求的URL中添加参数，具体参考文档中心->API文档中请求参数说明
+        Optional<HttpResponse> responseOpt = sendHttpPost(uriBuilder, bodyString);
+        // 从response获取响应结果
+        if (responseOpt.isPresent()) {
+            String body = new String(EntityUtils.toByteArray(responseOpt.get().getEntity()));
+            return dataTransferService.convertData(id, body);
+        }
+        return null;
+    }
+
+    private synchronized Optional<HttpResponse> sendHttpPost(URIBuilder uriBuilder, String bodyString) throws Exception {
+//        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        long offset = getTimeOffset();// 获取时间偏移量，方法见前面
         // (如果有MasterKey，将MasterKey加到head中，不加在此处)
         //uriBuilder.addParameter("productId", "9392");//如果没有其他参数，此行不要
         HttpPost httpPost = new HttpPost(uriBuilder.build());//构造post请求
+        httpPost.setProtocolVersion(HttpVersion.HTTP_1_0);
         long timestamp = System.currentTimeMillis() + offset;// 获取时间戳
         Date date = new Date(timestamp);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
-        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-        String dataString = dateFormat.format(date);// 生成格式化的日期字符串
+        DATA_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT"));
+        String dataString = DATA_FORMAT.format(date);// 生成格式化的日期字符串
         // head中添加公共参数
         httpPost.addHeader("application", Constant.APP_KEY);
         httpPost.addHeader("timestamp", "" + timestamp);
@@ -75,19 +123,13 @@ public class DataService {
         httpPost.setEntity(new StringEntity(bodyString,"utf-8"));
         try {
             // 发送请求
-            response = httpClient.execute(httpPost);
-            // 从response获取响应结果
-            String body = new String(EntityUtils.toByteArray(response.getEntity()));
-            return dataTransferService.convertData(id, body);
-
+            return Optional.of(httpClient.execute(httpPost));
         } catch (ClientProtocolException e) {
-            e.printStackTrace();
+            LOGGER.error("ClientProtocolException", e);
         } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            httpClient.close();
+            LOGGER.error("IOException", e);
         }
-        return null;
+        return Optional.empty();
     }
 
 
@@ -99,7 +141,7 @@ public class DataService {
      * @param body 请求body数据,如果是GET请求，此值写null
      * @return 签名数据
      */
-    public static String sign(Map<String, String> param, long timestamp, String application, String secret, byte[] body) throws Exception {
+    private String sign(Map<String, String> param, long timestamp, String application, String secret, byte[] body) throws Exception {
         // 连接系统参数
         StringBuffer sb = new StringBuffer();
         sb.append("application").append(":").append(application).append("\n");
@@ -136,7 +178,7 @@ public class DataService {
         return encryptedString;
     }
 
-    public static long getTimeOffset() {
+    private long getTimeOffset() {
         long offset = 0;
         HttpResponse response = null;
         //构造httpGet请求

@@ -20,7 +20,7 @@ public class SendMessageThread implements Runnable {
 
     public SendMessageThread(List<String> openidList, DataService dataService, MessagePushService messagePushService) {
         this.openidList = openidList;
-        this.openidList.add("ouB0E45WMDCrQcrfuc5n-YEzDDpI");
+//        this.openidList.add("ouB0E45WMDCrQcrfuc5n-YEzDDpI");
         this.dataService = dataService;
         this.messagePushService = messagePushService;
         this.accessTokenService = new AccessTokenService();
@@ -28,6 +28,7 @@ public class SendMessageThread implements Runnable {
 
     @Override
     public void run() {
+        LOGGER.info("Send Message Thread start!");
         long startTime = System.currentTimeMillis();
         long endTime = startTime;
         while (true) {
@@ -62,7 +63,7 @@ public class SendMessageThread implements Runnable {
     }
 
     private void pushMessage(int id, String time, long value) {
-        if (value < 0) {
+        if (value > -4.5) {
             for (String openid: openidList) {
                 messagePushService.push(accessTokenService.getAccessToken(), openid, id, time, value);
             }

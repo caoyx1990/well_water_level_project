@@ -19,8 +19,8 @@ public class MessagePushService {
 //        object.put("touser", "ouB0E45WMDCrQcrfuc5n-YEzDDpI");
         object.put("touser", openid);
         object.put("template_id", "YQvPYAx79NAox3o2zyjEmDLKn05F4feOIabb6FeJeS8");
-        object.put("page", "index/index");
-        object.put("miniprogram_state", "trial");
+        object.put("page", "/pages/index/index");
+        object.put("miniprogram_state", "formal");
         object.put("lang", "zh_CN");
 //        设备编号
 //        {{number1.DATA}}

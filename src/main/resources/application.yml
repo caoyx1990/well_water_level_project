@@ -13,6 +13,10 @@ spring:
       suffix: .html
       prefix: /
 
+
+logging.level.root: WARN
+logging.level.com.tencent.wxcloudrun: TRACE
+
 mybatis:
   mapper-locations: classpath*:mapper/*Mapper.xml
 

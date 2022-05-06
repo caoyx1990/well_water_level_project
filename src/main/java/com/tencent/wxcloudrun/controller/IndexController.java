@@ -40,7 +40,13 @@ public class IndexController {
     readFileToGetOpenids();
     SendMessageThread sendMessageThread = new SendMessageThread(OPENID_LIST, dataService, messagePushService);
     Thread thread = new Thread(sendMessageThread);
-//    thread.start();
+    thread.start();
+  }
+
+  @GetMapping("/device/data/history/{deviceId}")
+  public String getDeviceHistoryData(@PathVariable String deviceId) throws Exception {
+    LOGGER.info("/device/data/history/" + deviceId);
+    return dataService.getDeviceStatusHisInPage(Constant.PRODUCT_ID, Constant.DEVICE_ID_863882045830350).toJSONString();
   }
 
   @GetMapping("/device/data/{deviceId}")
@@ -57,6 +63,7 @@ public class IndexController {
 
   @GetMapping("/device/data/list")
   public String getAllDeviceData() throws Exception {
+    LOGGER.info("/device/data/list");
     JSONArray jsonArray = new JSONArray();
     jsonArray.add(dataService.getDeviceDataByAPI(1, Constant.PRODUCT_ID, Constant.DEVICE_ID_863882045830350));
     jsonArray.add(dataService.getDeviceDataByAPI(2, Constant.PRODUCT_ID, Constant.DEVICE_ID_863882045830368));
@@ -66,6 +73,7 @@ public class IndexController {
 
   @PostMapping("/openid")
   public String getOpenIdList(@RequestBody String openidList) throws IOException {
+    LOGGER.info("/openid, body: " + openidList);
     if (!OPENID_LIST.contains(openidList)) {
       OPENID_LIST.add(openidList);
       URL resource = IndexController.class.getResource("/openids.txt");
