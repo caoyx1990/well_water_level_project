@@ -72,7 +72,7 @@ public class IndexController {
   }
 
   @PostMapping("/openid")
-  public String getOpenIdList(@RequestBody String openidList) throws IOException {
+  public String getOpenId(@RequestBody String openidList) throws IOException {
     LOGGER.info("/openid, body: " + openidList);
     if (!OPENID_LIST.contains(openidList)) {
       OPENID_LIST.add(openidList);
@@ -90,6 +90,13 @@ public class IndexController {
       writer.flush();
       writer.close();
     }
+    return openidList;
+  }
+
+  @PostMapping("/openids")
+  public List<String> getOpenIdList(@RequestBody List<String> openidList) {
+    LOGGER.info("/openids, body: " + openidList);
+    OPENID_LIST.addAll(openidList);
     return openidList;
   }
 

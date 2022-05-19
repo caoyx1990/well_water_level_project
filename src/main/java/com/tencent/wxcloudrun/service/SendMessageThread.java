@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SendMessageThread implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(SendMessageThread.class);
@@ -20,7 +21,6 @@ public class SendMessageThread implements Runnable {
 
     public SendMessageThread(List<String> openidList, DataService dataService, MessagePushService messagePushService) {
         this.openidList = openidList;
-//        this.openidList.add("ouB0E45WMDCrQcrfuc5n-YEzDDpI");
         this.dataService = dataService;
         this.messagePushService = messagePushService;
         this.accessTokenService = new AccessTokenService();
@@ -32,23 +32,24 @@ public class SendMessageThread implements Runnable {
         long startTime = System.currentTimeMillis();
         long endTime = startTime;
         while (true) {
+            List<String> idList = this.openidList.stream().distinct().collect(Collectors.toList());
             if (endTime - startTime >= TIME_STEP) {
                 startTime = endTime;
                 try {
                     JSONObject device1 = dataService.getDeviceDataByAPI(1, Constant.PRODUCT_ID, Constant.DEVICE_ID_863882045830350);
                     JSONObject pressure = device1.getJSONObject("Pressure");
                     long value = pressure.getLong("value") - 7;
-                    pushMessage(1, pressure.getString("timestamp"), value);
+                    pushMessage(1, pressure.getString("timestamp"), value, idList);
 
                     JSONObject device2 = dataService.getDeviceDataByAPI(2, Constant.PRODUCT_ID, Constant.DEVICE_ID_863882045830368);
                     pressure = device2.getJSONObject("Pressure");
                     value = pressure.getLong("value") - 7;
-                    pushMessage(2, pressure.getString("timestamp"), value);
+                    pushMessage(2, pressure.getString("timestamp"), value, idList);
 
                     JSONObject device3 = dataService.getDeviceDataByAPI(3, Constant.PRODUCT_ID, Constant.DEVICE_ID_863882045830376);
                     pressure = device3.getJSONObject("Pressure");
                     value = pressure.getLong("value") - 12;
-                    pushMessage(3, pressure.getString("timestamp"), value);
+                    pushMessage(3, pressure.getString("timestamp"), value, idList);
                 } catch (Exception e) {
                     LOGGER.error("error send message.", e);
                 }
@@ -62,9 +63,9 @@ public class SendMessageThread implements Runnable {
         }
     }
 
-    private void pushMessage(int id, String time, long value) {
+    private void pushMessage(int id, String time, long value, List<String> idList) {
         if (value > -4.5) {
-            for (String openid: openidList) {
+            for (String openid: idList) {
                 messagePushService.push(accessTokenService.getAccessToken(), openid, id, time, value);
             }
         }
