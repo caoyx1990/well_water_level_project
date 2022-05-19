@@ -37,7 +37,7 @@ public class IndexController {
 
   @PostConstruct
   public void init() {
-    readFileToGetOpenids();
+//    readFileToGetOpenids();
     SendMessageThread sendMessageThread = new SendMessageThread(OPENID_LIST, dataService, messagePushService);
     Thread thread = new Thread(sendMessageThread);
     thread.start();
