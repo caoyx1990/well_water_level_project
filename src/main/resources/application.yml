@@ -14,6 +14,9 @@ spring:
       prefix: /
 
 
+
+
+
 logging.level.root: WARN
 logging.level.com.tencent.wxcloudrun: TRACE
 

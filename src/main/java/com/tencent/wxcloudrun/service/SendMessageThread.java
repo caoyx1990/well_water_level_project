@@ -64,7 +64,7 @@ public class SendMessageThread implements Runnable {
     }
 
     private void pushMessage(int id, String time, long value, List<String> idList) {
-        if (value > -4.5) {
+        if (value > -5) {
             for (String openid: idList) {
                 messagePushService.push(accessTokenService.getAccessToken(), openid, id, time, value);
             }
