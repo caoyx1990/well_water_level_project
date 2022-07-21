@@ -38,7 +38,7 @@ public class IndexController {
 
   @PostConstruct
   public void init() {
-    readFileToGetOpenids();
+//    readFileToGetOpenids();
     SendMessageThread sendMessageThread = new SendMessageThread(OPENID_LIST, dataService, messagePushService);
     Thread thread = new Thread(sendMessageThread);
     thread.start();
@@ -111,7 +111,15 @@ public class IndexController {
   @PostMapping("/openids")
   public List<String> getOpenIdList(@RequestBody List<String> openidList) {
     LOGGER.info("/openids, body: " + openidList);
-    OPENID_LIST.addAll(openidList);
+    if (OPENID_LIST.isEmpty()) {
+      OPENID_LIST.addAll(openidList);
+    } else {
+      for (String id: openidList) {
+        if (!OPENID_LIST.contains(id)) {
+          OPENID_LIST.add(id);
+        }
+      }
+    }
     return openidList;
   }
 
