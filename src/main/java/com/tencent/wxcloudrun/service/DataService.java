@@ -83,11 +83,15 @@ public class DataService {
         uriBuilder.setHost("ag-api.ctwing.cn/aep_device_status"); //请求地址
         uriBuilder.setPath("/deviceStatusList"); //访问路径，可以在API文档中对应API中找到此访问路径
         // 在请求的URL中添加参数，具体参考文档中心->API文档中请求参数说明
-        Optional<HttpResponse> responseOpt = sendHttpPost(uriBuilder, bodyString);
-        // 从response获取响应结果
-        if (responseOpt.isPresent()) {
-            String body = new String(EntityUtils.toByteArray(responseOpt.get().getEntity()));
-            return dataTransferService.convertData(id, body);
+        try {
+            Optional<HttpResponse> responseOpt = sendHttpPost(uriBuilder, bodyString);
+            // 从response获取响应结果
+            if (responseOpt.isPresent()) {
+                String body = new String(EntityUtils.toByteArray(responseOpt.get().getEntity()));
+                return dataTransferService.convertData(id, body);
+            }
+        } catch (Exception e) {
+            LOGGER.error("exception:", e);
         }
         return null;
     }

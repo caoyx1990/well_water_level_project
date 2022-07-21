@@ -1,6 +1,7 @@
 package com.tencent.wxcloudrun.controller;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.tencent.wxcloudrun.service.AccessTokenService;
 import com.tencent.wxcloudrun.service.DataService;
 import com.tencent.wxcloudrun.service.MessagePushService;
@@ -65,9 +66,19 @@ public class IndexController {
   public String getAllDeviceData() throws Exception {
     LOGGER.info("/device/data/list");
     JSONArray jsonArray = new JSONArray();
-    jsonArray.add(dataService.getDeviceDataByAPI(1, Constant.PRODUCT_ID, Constant.DEVICE_ID_863882045830350));
-    jsonArray.add(dataService.getDeviceDataByAPI(2, Constant.PRODUCT_ID, Constant.DEVICE_ID_863882045830368));
-    jsonArray.add(dataService.getDeviceDataByAPI(3, Constant.PRODUCT_ID, Constant.DEVICE_ID_863882045830376));
+    JSONObject deviceData1 = dataService.getDeviceDataByAPI(1, Constant.PRODUCT_ID, Constant.DEVICE_ID_863882045830350);
+    if (deviceData1 != null) {
+      jsonArray.add(deviceData1);
+    }
+
+    JSONObject deviceData2 = dataService.getDeviceDataByAPI(2, Constant.PRODUCT_ID, Constant.DEVICE_ID_863882045830368);
+    if (deviceData2 != null) {
+      jsonArray.add(deviceData2);
+    }
+    JSONObject deviceData3 = dataService.getDeviceDataByAPI(3, Constant.PRODUCT_ID, Constant.DEVICE_ID_863882045830376);
+    if (deviceData3 != null) {
+      jsonArray.add(deviceData3);
+    }
     return jsonArray.toJSONString();
   }
 

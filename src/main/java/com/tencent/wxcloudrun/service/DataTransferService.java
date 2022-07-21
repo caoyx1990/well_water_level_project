@@ -22,9 +22,12 @@ public class DataTransferService {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+8"));
         JSONObject resultJson = new JSONObject();
-        resultJson.put("id", id);
         JSONObject json = JSONObject.parseObject(input);
         JSONArray deviceStatusList = json.getJSONArray("deviceStatusList");
+        if (deviceStatusList == null) {
+            return null;
+        }
+        resultJson.put("id", id);
         int num = 3;
         if (deviceStatusList != null) {
             JSONObject dotP = (JSONObject) deviceStatusList.stream()
