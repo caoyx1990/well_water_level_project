@@ -12,7 +12,7 @@ public class MessagePushService {
     private static final Logger LOGGER = LoggerFactory.getLogger(MessagePushService.class);
     private static final String SEND_URL = "https://api.weixin.qq.com/cgi-bin/message/subscribe/send?access_token=";
 
-    public String push(String token, String openid, int id, String time, long value) {
+    public String push(String token, String openid, int id, String time, double value) {
         RestTemplate restTemplate = new RestTemplate();
         String url = SEND_URL + token;
         JSONObject object = new JSONObject();
