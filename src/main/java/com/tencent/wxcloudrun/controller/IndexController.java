@@ -38,7 +38,7 @@ public class IndexController {
 
   @PostConstruct
   public void init() {
-//    readFileToGetOpenids();
+    readFileToGetOpenids();
     SendMessageThread sendMessageThread = new SendMessageThread(OPENID_LIST, dataService, messagePushService);
     Thread thread = new Thread(sendMessageThread);
     thread.start();
@@ -88,11 +88,15 @@ public class IndexController {
     if (!OPENID_LIST.contains(openidList)) {
       OPENID_LIST.add(openidList);
       URL resource = IndexController.class.getResource("/openids.txt");
+      String file;
       if (resource == null) {
-        File file = new File("/openids.txt");
-        file.createNewFile();
+        File newfile = new File("/openids.txt");
+        newfile.createNewFile();
+        file = newfile.getAbsolutePath();
+      } else {
+        file = resource.getFile();
       }
-      FileOutputStream out = new FileOutputStream(resource.getFile(), true);
+      FileOutputStream out = new FileOutputStream(file, true);
       OutputStreamWriter writer = new OutputStreamWriter(out);
       for (String openid: OPENID_LIST) {
         writer.write(openid);
@@ -114,11 +118,16 @@ public class IndexController {
   private synchronized void readFileToGetOpenids() {
     try {
       URL resource = IndexController.class.getResource("/openids.txt");
+      LOGGER.info("openid path: " + resource.getPath());
+      String file;
       if (resource == null) {
-        File file = new File("/openids.txt");
-        file.createNewFile();
+        LOGGER.info("create openid file");
+        File newfile = new File("/openids.txt");
+        newfile.createNewFile();
+        file = newfile.getAbsolutePath();
+      } else {
+        file = resource.getFile();
       }
-      String file = resource.getFile();
       FileReader fileReader = new FileReader(file);
       BufferedReader in = new BufferedReader(fileReader);
       String str;
@@ -128,6 +137,7 @@ public class IndexController {
       }
       list = list.stream().distinct().collect(Collectors.toList());
       OPENID_LIST.addAll(list);
+      LOGGER.info("openid_list size: " + OPENID_LIST.size());
       in.close();
     } catch (Exception e) {
       LOGGER.error("Error read openids.txt.", e);
