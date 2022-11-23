@@ -56,7 +56,7 @@ public class IndexController {
 
   @PostMapping("/openid/get")
   public String getUserInfo(@RequestBody String code) throws Exception {
-    LOGGER.info("code" + code);
+    LOGGER.info("/openid/get, code" + code);
     String url = "https://api.weixin.qq.com/sns/jscode2session";
     url += "?appid=wxac0bbf1996e4685f";//自己的appid
     url += "&secret=09ad941d7aebeccf9d527bf3fbdcd88d";//自己的appSecret
@@ -135,9 +135,10 @@ public class IndexController {
 
   @PostMapping("/openid/send")
   public String saveOpenid(@RequestBody String openid) throws IOException {
-    LOGGER.info("/openid, body: " + openid);
-    this.openidService.saveOpenid(openid);
+    LOGGER.info("/openid/send, body: " + openid);
+    if (!this.openidService.hasOpenid(openid)) {
+      this.openidService.saveOpenid(openid);
+    }
     return openid;
   }
-
 }
