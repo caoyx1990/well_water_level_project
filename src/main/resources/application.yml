@@ -4,17 +4,17 @@ server:
 
 spring:
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${MYSQL_ADDRESS}/${MYSQL_DATABASE:springboot_demo}
-    username: ${MYSQL_USERNAME}
-    password: ${MySQL_PASSWORD}
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://sh-cynosdbmysql-grp-9ze1dej6.sql.tencentcdb.com:22938/well_water
+    username: root
+    password: Root!234
+  jpa:
+    hibernate:
+      ddl-auto: update
   mvc:
     view:
       suffix: .html
       prefix: /
-
-
-
 
 
 logging.level.root: WARN

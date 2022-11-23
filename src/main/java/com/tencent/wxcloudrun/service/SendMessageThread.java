@@ -19,10 +19,15 @@ public class SendMessageThread implements Runnable {
     private MessagePushService messagePushService;
     private AccessTokenService accessTokenService;
 
-    public SendMessageThread(List<String> openidList, DataService dataService, MessagePushService messagePushService) {
-        this.openidList = openidList;
+    private int alertNum;
+
+    public SendMessageThread(DataService dataService, MessagePushService messagePushService, OpenidService openidService, AlertService alertService) {
+        this.openidList = openidService.getAllOpenid();
+        LOGGER.info("openidList: " + String.join(",", openidList));
         this.dataService = dataService;
         this.messagePushService = messagePushService;
+        this.alertNum = -alertService.getAlertNum();
+        LOGGER.info("Alert num: " + alertNum);
         this.accessTokenService = new AccessTokenService();
     }
 
@@ -70,7 +75,7 @@ public class SendMessageThread implements Runnable {
     }
 
     private void pushMessage(int id, String time, double value, List<String> idList) {
-        if (value > -5) {
+        if (value > alertNum) {
             for (String openid: idList) {
                 messagePushService.push(accessTokenService.getAccessToken(), openid, id, time, value);
             }

@@ -1,12 +1,17 @@
 package com.tencent.wxcloudrun.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.tencent.wxcloudrun.service.AccessTokenService;
-import com.tencent.wxcloudrun.service.DataService;
-import com.tencent.wxcloudrun.service.MessagePushService;
-import com.tencent.wxcloudrun.service.SendMessageThread;
+import com.tencent.wxcloudrun.service.*;
 import com.tencent.wxcloudrun.utils.Constant;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 import org.apache.tomcat.util.threads.ThreadPoolExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,20 +33,67 @@ import java.util.stream.Collectors;
 public class IndexController {
   private static final Logger LOGGER = LoggerFactory.getLogger(IndexController.class);
 
-  private final static List<String> OPENID_LIST = new CopyOnWriteArrayList<String>();
-
   @Autowired
   private DataService dataService;
 
   @Autowired
   private MessagePushService messagePushService;
 
+  @Autowired
+  private OpenidService openidService;
+
+  @Autowired
+  private AlertService alertService;
+
   @PostConstruct
   public void init() {
 //    readFileToGetOpenids();
-    SendMessageThread sendMessageThread = new SendMessageThread(OPENID_LIST, dataService, messagePushService);
+    SendMessageThread sendMessageThread = new SendMessageThread(dataService, messagePushService,
+            openidService, alertService);
     Thread thread = new Thread(sendMessageThread);
     thread.start();
+  }
+
+  @PostMapping("/openid/get")
+  public String getUserInfo(@RequestBody String code) throws Exception {
+    LOGGER.info("code" + code);
+    String url = "https://api.weixin.qq.com/sns/jscode2session";
+    url += "?appid=wxac0bbf1996e4685f";//自己的appid
+    url += "&secret=09ad941d7aebeccf9d527bf3fbdcd88d";//自己的appSecret
+    url += "&js_code=" + code;
+    url += "&grant_type=authorization_code";
+    url += "&connect_redirect=1";
+    String res = null;
+    CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+    // DefaultHttpClient();
+    HttpGet httpget = new HttpGet(url);    //GET方式
+    CloseableHttpResponse response = null;
+    // 配置信息
+    RequestConfig requestConfig = RequestConfig.custom()          // 设置连接超时时间(单位毫秒)
+            .setConnectTimeout(5000)                    // 设置请求超时时间(单位毫秒)
+            .setConnectionRequestTimeout(5000)             // socket读写超时时间(单位毫秒)
+            .setSocketTimeout(5000)                    // 设置是否允许重定向(默认为true)
+            .setRedirectsEnabled(false).build();           // 将上面的配置信息 运用到这个Get请求里
+    httpget.setConfig(requestConfig);                         // 由客户端执行(发送)Get请求
+    response = httpClient.execute(httpget);                   // 从响应模型中获取响应实体
+    HttpEntity responseEntity = response.getEntity();
+    LOGGER.info("响应状态为:" + response.getStatusLine());
+    if (responseEntity != null) {
+      res = EntityUtils.toString(responseEntity);
+      LOGGER.info("响应内容长度为:" + responseEntity.getContentLength());
+      LOGGER.info("响应内容为:" + res);
+    }
+    // 释放资源
+    if (httpClient != null) {
+      httpClient.close();
+    }
+    if (response != null) {
+      response.close();
+    }
+    JSONObject jo = JSON.parseObject(res);
+    String openid = jo.getString("openid");
+    LOGGER.info("openid" + openid);
+    return openid;
   }
 
   @GetMapping("/device/data/history/{deviceId}")
@@ -70,7 +122,6 @@ public class IndexController {
     if (deviceData1 != null) {
       jsonArray.add(deviceData1);
     }
-
     JSONObject deviceData2 = dataService.getDeviceDataByAPI(2, Constant.PRODUCT_ID, Constant.DEVICE_ID_863882045830368);
     if (deviceData2 != null) {
       jsonArray.add(deviceData2);
@@ -82,74 +133,11 @@ public class IndexController {
     return jsonArray.toJSONString();
   }
 
-  @PostMapping("/openid")
-  public String getOpenId(@RequestBody String openidList) throws IOException {
-    LOGGER.info("/openid, body: " + openidList);
-    if (!OPENID_LIST.contains(openidList)) {
-      OPENID_LIST.add(openidList);
-      URL resource = IndexController.class.getResource("/openids.txt");
-      String file;
-      if (resource == null) {
-        File newfile = new File("/openids.txt");
-        newfile.createNewFile();
-        file = newfile.getAbsolutePath();
-      } else {
-        file = resource.getFile();
-      }
-      FileOutputStream out = new FileOutputStream(file, true);
-      OutputStreamWriter writer = new OutputStreamWriter(out);
-      for (String openid: OPENID_LIST) {
-        writer.write(openid);
-        writer.write("\n");
-      }
-      writer.flush();
-      writer.close();
-    }
-    return openidList;
-  }
-
-  @PostMapping("/openids")
-  public List<String> getOpenIdList(@RequestBody List<String> openidList) {
-    LOGGER.info("/openids, body: " + openidList);
-    if (OPENID_LIST.isEmpty()) {
-      OPENID_LIST.addAll(openidList);
-    } else {
-      for (String id: openidList) {
-        if (!OPENID_LIST.contains(id)) {
-          OPENID_LIST.add(id);
-        }
-      }
-    }
-    return openidList;
-  }
-
-  private synchronized void readFileToGetOpenids() {
-    try {
-      URL resource = IndexController.class.getResource("/openids.txt");
-      LOGGER.info("openid path: " + resource.getPath());
-      String file;
-      if (resource == null) {
-        LOGGER.info("create openid file");
-        File newfile = new File("/openids.txt");
-        newfile.createNewFile();
-        file = newfile.getAbsolutePath();
-      } else {
-        file = resource.getFile();
-      }
-      FileReader fileReader = new FileReader(file);
-      BufferedReader in = new BufferedReader(fileReader);
-      String str;
-      List<String> list = new ArrayList<>();
-      while ((str = in.readLine()) != null) {
-        list.add(str);
-      }
-      list = list.stream().distinct().collect(Collectors.toList());
-      OPENID_LIST.addAll(list);
-      LOGGER.info("openid_list size: " + OPENID_LIST.size());
-      in.close();
-    } catch (Exception e) {
-      LOGGER.error("Error read openids.txt.", e);
-    }
+  @PostMapping("/openid/send")
+  public String saveOpenid(@RequestBody String openid) throws IOException {
+    LOGGER.info("/openid, body: " + openid);
+    this.openidService.saveOpenid(openid);
+    return openid;
   }
 
 }
