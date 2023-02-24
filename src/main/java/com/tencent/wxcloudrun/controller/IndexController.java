@@ -69,13 +69,20 @@ public class IndexController {
     HttpGet httpget = new HttpGet(url);    //GET方式
     CloseableHttpResponse response = null;
     // 配置信息
-    RequestConfig requestConfig = RequestConfig.custom()          // 设置连接超时时间(单位毫秒)
-            .setConnectTimeout(5000)                    // 设置请求超时时间(单位毫秒)
-            .setConnectionRequestTimeout(5000)             // socket读写超时时间(单位毫秒)
-            .setSocketTimeout(5000)                    // 设置是否允许重定向(默认为true)
-            .setRedirectsEnabled(false).build();           // 将上面的配置信息 运用到这个Get请求里
-    httpget.setConfig(requestConfig);                         // 由客户端执行(发送)Get请求
-    response = httpClient.execute(httpget);                   // 从响应模型中获取响应实体
+    RequestConfig requestConfig = RequestConfig.custom()
+            // 设置连接超时时间(单位毫秒)
+            .setConnectTimeout(5000)
+            // 设置请求超时时间(单位毫秒)
+            .setConnectionRequestTimeout(5000)
+            // socket读写超时时间(单位毫秒)
+            .setSocketTimeout(5000)
+            // 设置是否允许重定向(默认为true)
+            .setRedirectsEnabled(false).build();
+    // 将上面的配置信息 运用到这个Get请求里
+    httpget.setConfig(requestConfig);
+    // 由客户端执行(发送)Get请求
+    response = httpClient.execute(httpget);
+    // 从响应模型中获取响应实体
     HttpEntity responseEntity = response.getEntity();
     LOGGER.info("响应状态为:" + response.getStatusLine());
     if (responseEntity != null) {
