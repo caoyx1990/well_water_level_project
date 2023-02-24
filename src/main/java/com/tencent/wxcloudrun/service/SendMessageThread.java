@@ -43,6 +43,7 @@ public class SendMessageThread implements Runnable {
                 try {
                     JSONObject device1 = dataService.getDeviceDataByAPI(1, Constant.PRODUCT_ID, Constant.DEVICE_ID_863882045830350);
                     if (device1 != null) {
+                        LOGGER.info("device1: " + device1.toJSONString());
                         JSONObject pressure = device1.getJSONObject("Pressure");
                         double value = pressure.getDoubleValue("value") - 7;
                         pushMessage(1, pressure.getString("timestamp"), value, idList);
@@ -50,6 +51,7 @@ public class SendMessageThread implements Runnable {
 
                     JSONObject device2 = dataService.getDeviceDataByAPI(2, Constant.PRODUCT_ID, Constant.DEVICE_ID_863882045830368);
                     if (device2 != null) {
+                        LOGGER.info("device2: " + device2.toJSONString());
                         JSONObject pressure  = device2.getJSONObject("Pressure");
                         double value = pressure.getDoubleValue("value") - 7;
                         pushMessage(2, pressure.getString("timestamp"), value, idList);
@@ -57,6 +59,7 @@ public class SendMessageThread implements Runnable {
 
                     JSONObject device3 = dataService.getDeviceDataByAPI(3, Constant.PRODUCT_ID, Constant.DEVICE_ID_863882045830376);
                     if (device3 != null) {
+                        LOGGER.info("device3: " + device3.toJSONString());
                         JSONObject pressure = device3.getJSONObject("Pressure");
                         double value = pressure.getDoubleValue("value") - 12;
                         pushMessage(3, pressure.getString("timestamp"), value, idList);
