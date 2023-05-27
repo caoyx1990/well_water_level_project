@@ -1,14 +1,8 @@
 server:
-  port: 80
+  port: 8080
 
 
 spring:
-  datasource:
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#    url: jdbc:mysql://sh-cynosdbmysql-grp-9ze1dej6.sql.tencentcdb.com:22938/well_water
-    url: jdbc:mysql://121.196.208.225:3306/well_water
-    username: user1
-    password: Root!234
   jpa:
     hibernate:
       ddl-auto: update

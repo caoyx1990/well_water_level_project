@@ -39,38 +39,6 @@ public class DataService {
     private static CloseableHttpClient httpClient = HttpClientBuilder.create().build();
 
     /**
-     * /getDeviceStatusHisInPage
-     * {"productId":"10000088","deviceId":"10000088001","begin_timestamp":"1538981624878",
-     * "end_timestamp":"1539575396505","page_size":5,"page_timestamp":"1539575396505"}
-     * @return
-     */
-    public synchronized JSONObject getDeviceStatusHisInPage(String productId, String deviceId) throws Exception {
-        JSONObject jsonBody = new JSONObject();
-        jsonBody.put("productId", productId);
-        jsonBody.put("deviceId", deviceId);
-        Date date = new Date();
-        date.setMonth(4);
-        jsonBody.put("begin_timestamp",  date.getTime());
-        jsonBody.put("end_timestamp", new Date().getTime());
-        jsonBody.put("page_size", "5");
-        jsonBody.put("page_timestamp", "");
-        String bodyString = jsonBody.toString();
-
-        URIBuilder uriBuilder = new URIBuilder();
-        uriBuilder.setScheme("https");
-        uriBuilder.setHost("ag-api.ctwing.cn/aep_device_status"); //请求地址
-        uriBuilder.setPath("/getDeviceStatusHisInPage"); //访问路径，可以在API文档中对应API中找到此访问路径
-        // 在请求的URL中添加参数，具体参考文档中心->API文档中请求参数说明
-        Optional<HttpResponse> responseOpt = sendHttpPost(uriBuilder, bodyString);
-        // 从response获取响应结果
-        if (responseOpt.isPresent()) {
-            String body = new String(EntityUtils.toByteArray(responseOpt.get().getEntity()));
-            LOGGER.info(body);
-        }
-        return null;
-    }
-
-    /**
      * http POST请求示例
      */
     public synchronized JSONObject getDeviceDataByAPI(int id, String productId, String deviceId) throws Exception {
