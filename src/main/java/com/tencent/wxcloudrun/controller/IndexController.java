@@ -64,6 +64,7 @@ public class IndexController {
     if (deviceData3 != null) {
       jsonArray.add(deviceData3);
     }
+    LOGGER.info(jsonArray.toJSONString());
     return jsonArray.toJSONString();
   }
 
